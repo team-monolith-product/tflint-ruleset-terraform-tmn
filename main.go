@@ -10,7 +10,7 @@ func main() {
 	plugin.Serve(&plugin.ServeOpts{
 		RuleSet: &tflint.BuiltinRuleSet{
 			Name:    "terraform-sort",
-			Version: "0.1.2",
+			Version: "0.1.3",
 			Rules: []tflint.Rule{
 				rules.NewTerraformListOrderRule(),
 			},

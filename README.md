@@ -13,7 +13,7 @@ You can install the plugin with `tflint --init`. Declare a config in `.tflint.hc
 plugin "terraform-sort" {
   enabled = true
 
-  version = "0.1.0"
+  version = "0.1.3"
   source  = "github.com/kenske/tflint-ruleset-terraform-sort"
 
 }
