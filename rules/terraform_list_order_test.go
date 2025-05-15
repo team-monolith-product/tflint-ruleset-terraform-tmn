@@ -14,9 +14,17 @@ func Test_TerraformVariableOrderRule(t *testing.T) {
 		Expected helper.Issues
 	}{
 		{
-			Name: "1. no lists",
+			Name: "No lists",
 			Content: `
 terraform{}`,
+			Expected: helper.Issues{},
+		},
+		{
+			Name: "Empty list",
+			Content: `
+locals {
+  names = []
+}`,
 			Expected: helper.Issues{},
 		},
 		{

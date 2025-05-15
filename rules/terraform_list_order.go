@@ -79,8 +79,11 @@ func (r *TerraformListOrderRule) checkBlock(runner tflint.Runner, block *hclsynt
 			list := value.AsValueSlice()
 			var items []string
 			for _, v := range list {
-
 				items = append(items, v.AsString())
+			}
+
+			if len(items) == 0 {
+				continue
 			}
 
 			if !isSorted(items) {
