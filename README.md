@@ -21,7 +21,7 @@ plugin "terraform-sort" {
 
 ## Rules
 
-See [docs/rules](docs/rules) for a list of rules available in this ruleset.
+See [docs](docs) for a list of rules available in this ruleset.
 
 ## Building the plugin
 
