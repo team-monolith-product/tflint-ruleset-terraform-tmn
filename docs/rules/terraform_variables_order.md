@@ -7,7 +7,7 @@ Recommends alphabetical order for variables.
 ```hcl
 rule "terraform_variables_order" {
   enabled = true
-  sort_required = false
+  group_required = false # Set to true if you want required variables to be sorted separately from the optional ones
 }
 ```
 

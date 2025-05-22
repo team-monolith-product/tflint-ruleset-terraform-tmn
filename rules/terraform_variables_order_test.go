@@ -20,7 +20,7 @@ terraform{}`,
 			Config: `
 rule "terraform_variables_order" {
   enabled       = true
-  sort_required = true
+  group_required = true
 }`,
 			Expected: helper.Issues{},
 		},
@@ -53,7 +53,7 @@ variable "docker_ports" {
 			Config: `
 rule "terraform_variables_order" {
   enabled       = true
-  sort_required = true
+  group_required = true
 }`,
 			Expected: helper.Issues{},
 		},
@@ -71,7 +71,7 @@ variable "image_id" {
 			Config: `
 rule "terraform_variables_order" {
   enabled       = true
-  sort_required = true
+  group_required = true
 }`,
 			Expected: helper.Issues{
 				{
@@ -113,7 +113,7 @@ variable "availability_zone_names" {
 			Config: `
 rule "terraform_variables_order" {
   enabled       = true
-  sort_required = true
+  group_required = true
 }`,
 			Expected: helper.Issues{
 				{
@@ -170,7 +170,7 @@ variable "image_id" {
 			Config: `
 rule "terraform_variables_order" {
   enabled       = true
-  sort_required = true
+  group_required = true
 }`,
 			Expected: helper.Issues{
 				{
@@ -203,7 +203,7 @@ variable "docker_ports" {
 			},
 		},
 		{
-			Name: "6. sorting with sort_required disabled",
+			Name: "6. sorting with group_required disabled",
 			Content: `
 variable "availability_zone_names" {
   type    = list(string)
@@ -216,7 +216,7 @@ variable "image_id" {
 			Config: `
 rule "terraform_variables_order" {
   enabled       = true
-  sort_required = false
+  group_required = false
 }`,
 			Expected: helper.Issues{},
 		},

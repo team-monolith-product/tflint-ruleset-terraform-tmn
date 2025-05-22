@@ -22,7 +22,7 @@ type TerraformVariablesOrderRule struct {
 }
 
 type TerraformVariablesOrderRuleConfig struct {
-	SortRequired bool `hclext:"sort_required"`
+	GroupRequired bool `hclext:"group_required"`
 }
 
 // NewTerraformVariablesOrderRule returns a new rule
@@ -63,10 +63,8 @@ func (r *TerraformVariablesOrderRule) Check(runner tflint.Runner) error {
 		return err
 	}
 
-	logger.Debug(fmt.Sprintf("value of sort_required: %v", config.SortRequired))
-
 	for _, file := range files {
-		if subErr := r.checkVariablesOrder(runner, config.SortRequired, file); subErr != nil {
+		if subErr := r.checkVariablesOrder(runner, config.GroupRequired, file); subErr != nil {
 			err = multierror.Append(err, subErr)
 		}
 	}
@@ -94,13 +92,8 @@ func (r *TerraformVariablesOrderRule) checkVariablesOrder(runner tflint.Runner, 
 
 	variableNames := r.getVariableNames(blocks)
 	if reflect.DeepEqual(variableNames, sortedVariableNames) {
-		logger.Debug("variables are sorted")
-		logger.Debug(fmt.Sprintf("variables: %v", variableNames))
 		return nil
 	}
-
-	logger.Debug("variables are not sorted")
-	logger.Debug(fmt.Sprintf("variables: %v", variableNames))
 
 	firstRange := r.firstVariableRange(blocks)
 	sortedVariableHclTxts := r.sortedVariableCodeTxts(blocks, file, sortedVariableNames)
