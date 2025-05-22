@@ -9,7 +9,6 @@ import (
 func Test_TerraformVariableOrderRule(t *testing.T) {
 	cases := []struct {
 		Name     string
-		JSON     bool
 		Content  string
 		Expected helper.Issues
 	}{
@@ -90,10 +89,7 @@ data "aws_iam_policy_document" "current" {
 
 	for _, tc := range cases {
 		t.Run(tc.Name, func(t *testing.T) {
-			filename := "config.tf"
-			if tc.JSON {
-				filename = "config.tf.json"
-			}
+			filename := "main.tf"
 			runner := helper.TestRunner(t, map[string]string{filename: tc.Content})
 
 			if err := rule.Check(runner); err != nil {
