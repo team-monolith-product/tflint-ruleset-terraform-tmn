@@ -84,6 +84,21 @@ data "aws_iam_policy_document" "current" {
 				},
 			},
 		},
+
+		{
+			Name: "6. Works with bool values",
+			Content: `
+data "aws_iam_policy_document" "policy" {
+  statement {
+    condition {
+      test     = "Bool"
+      values   = [true]
+      variable = "elasticfilesystem:AccessedViaMountTarget"
+    }
+  }
+}`,
+			Expected: helper.Issues{},
+		},
 	}
 	rule := NewTerraformListOrderRule()
 

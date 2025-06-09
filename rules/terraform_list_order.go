@@ -79,6 +79,10 @@ func (r *TerraformListOrderRule) checkBlock(runner tflint.Runner, block *hclsynt
 			list := value.AsValueSlice()
 			var items []string
 			for _, v := range list {
+				if v.Type().FriendlyName() != "string" {
+					logger.Debug(fmt.Sprintf("Skipping attribute '%s' since it contains non-string values", name))
+					continue
+				}
 				items = append(items, v.AsString())
 			}
 
