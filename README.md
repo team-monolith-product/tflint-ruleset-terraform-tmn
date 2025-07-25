@@ -13,7 +13,7 @@ You can install the plugin with `tflint --init`. Declare a config in `.tflint.hc
 plugin "terraform-sort" {
   enabled = true
 
-  version = "0.2.2"
+  version = "0.3.0"
   source  = "github.com/kenske/tflint-ruleset-terraform-sort"
 
 }
@@ -23,27 +23,14 @@ plugin "terraform-sort" {
 
 See [docs](docs) for a list of rules available in this ruleset.
 
-## Building the plugin
+## Development
 
 Clone the repository locally and run the following command:
-
-```
-$ make
-```
-
-You can easily install the built plugin with the following:
 
 ```
 $ make install
 ```
 
-You can run the built plugin like the following:
+This will install the plugin in `~/.tflint.d/plugins`.
 
-```
-$ cat << EOS > .tflint.hcl
-plugin "template" {
-  enabled = true
-}
-EOS
-$ tflint
-```
+Run `TFLINT_LOG=debug tflint` to see debug logs.

@@ -74,7 +74,7 @@ func (r *TerraformVariablesOrderRule) Check(runner tflint.Runner) error {
 func (r *TerraformVariablesOrderRule) checkVariablesOrder(runner tflint.Runner, sortRequired bool, file *hcl.File) error {
 	body, ok := file.Body.(*hclsyntax.Body)
 	if !ok {
-		logger.Debug("skip terraform_variables_order check since it's not hcl file")
+		logger.Debug("skip terraform_variables_order check since it's not a valid hcl file")
 		return nil
 	}
 	blocks := body.Blocks
@@ -97,13 +97,29 @@ func (r *TerraformVariablesOrderRule) checkVariablesOrder(runner tflint.Runner, 
 
 	firstRange := r.firstVariableRange(blocks)
 	sortedVariableHclTxts := r.sortedVariableCodeTxts(blocks, file, sortedVariableNames)
-	sortedVariableHclBytes := hclwrite.Format([]byte(strings.Join(sortedVariableHclTxts, "\n\n")))
+	sortedVariableString := strings.Join(sortedVariableHclTxts, "\n\n")
+	sortedVariableHclBytes := hclwrite.Format([]byte(sortedVariableString))
 
-	return runner.EmitIssue(
+	return runner.EmitIssueWithFix(
 		r,
 		fmt.Sprintf("Recommended variables order:\n%s", sortedVariableHclBytes),
 		*firstRange,
+		func(f tflint.Fixer) error {
+			// We can't fix the file if it contains a mix of variables and other blocks
+			if !r.isAllVariables(blocks) {
+				logger.Debug("Fix is not supported for files with non-variable blocks")
+				return tflint.ErrFixNotSupported
+			}
+
+			fullRange := body.Range()
+			err := f.ReplaceText(fullRange, sortedVariableString+"\n")
+			if err != nil {
+				return err
+			}
+			return nil
+		},
 	)
+
 }
 
 func (r *TerraformVariablesOrderRule) sortedVariableCodeTxts(blocks hclsyntax.Blocks, file *hcl.File, sortedVariableNames []string) []string {
@@ -125,13 +141,15 @@ func (r *TerraformVariablesOrderRule) variableCodeTxts(blocks hclsyntax.Blocks, 
 }
 
 func (r *TerraformVariablesOrderRule) firstVariableRange(blocks hclsyntax.Blocks) *hcl.Range {
-	var firstRange *hcl.Range
-	r.forVariables(blocks, func(v *hclsyntax.Block) {
-		if firstRange == nil {
-			firstRange = ref(v.DefRange())
+	for _, block := range blocks {
+		if block.Type == "variable" {
+			rng := block.DefRange()
+			return &rng
 		}
-	})
-	return firstRange
+	}
+
+	return nil
+
 }
 
 func (r *TerraformVariablesOrderRule) getVariableNames(blocks hclsyntax.Blocks) []string {
@@ -161,4 +179,15 @@ func (r *TerraformVariablesOrderRule) forVariables(blocks hclsyntax.Blocks, acti
 			action(block)
 		}
 	}
+}
+
+// Checks if all blocks are variable blocks
+func (r *TerraformVariablesOrderRule) isAllVariables(blocks hclsyntax.Blocks) bool {
+	for _, block := range blocks {
+		if block.Type != "variable" {
+			return false
+		}
+	}
+
+	return true
 }

@@ -1,6 +1,7 @@
 # terraform_list_order
 
 Recommends alphabetical order for variables.
+Autofix requires a file to only have variable blocks. If it contains other types of blocks, the fix will not be applied.
 
 ## Configuration
 

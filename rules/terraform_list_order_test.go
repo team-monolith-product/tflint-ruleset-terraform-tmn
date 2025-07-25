@@ -6,7 +6,7 @@ import (
 	"github.com/terraform-linters/tflint-plugin-sdk/helper"
 )
 
-func Test_TerraformVariableOrderRule(t *testing.T) {
+func Test_TerraformListOrderRule(t *testing.T) {
 	cases := []struct {
 		Name     string
 		Content  string
@@ -42,8 +42,13 @@ locals {
 }`,
 			Expected: helper.Issues{
 				{
-					Rule:    NewTerraformListOrderRule(),
-					Message: `List 'names' is not sorted alphabetically. Recommended order: ["Alice", "Bob", "Charlie", "Xavier"]`,
+					Rule: NewTerraformListOrderRule(),
+					Message: `List 'names' is not sorted alphabetically. Recommended order: [
+"Alice", 
+"Bob", 
+"Charlie", 
+"Xavier"
+]`,
 				},
 			},
 		},
@@ -79,8 +84,14 @@ data "aws_iam_policy_document" "current" {
 }`,
 			Expected: helper.Issues{
 				{
-					Rule:    NewTerraformListOrderRule(),
-					Message: `List 'actions' is not sorted alphabetically. Recommended order: ["kms:Decrypt*", "kms:Describe*", "kms:Encrypt*", "kms:GenerateDataKey*", "kms:ReEncrypt*"]`,
+					Rule: NewTerraformListOrderRule(),
+					Message: `List 'actions' is not sorted alphabetically. Recommended order: [
+"kms:Decrypt*", 
+"kms:Describe*", 
+"kms:Encrypt*", 
+"kms:GenerateDataKey*", 
+"kms:ReEncrypt*"
+]`,
 				},
 			},
 		},

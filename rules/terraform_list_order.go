@@ -90,17 +90,29 @@ func (r *TerraformListOrderRule) checkBlock(runner tflint.Runner, block *hclsynt
 				continue
 			}
 
-			if !isSorted(items) {
-				sortedItems := make([]string, len(items))
-				copy(sortedItems, items)
-				sort.Strings(sortedItems)
-
-				return runner.EmitIssue(
-					r,
-					fmt.Sprintf("List '%s' is not sorted alphabetically. Recommended order: %v", name, toHCLList(sortedItems)),
-					attr.Range(),
-				)
+			if isSorted(items) {
+				continue
 			}
+
+			sortedItems := make([]string, len(items))
+			copy(sortedItems, items)
+			sort.Strings(sortedItems)
+			listRange := attr.Expr.Range()
+			suggestedFix := toHCLList(sortedItems)
+
+			return runner.EmitIssueWithFix(
+				r,
+				fmt.Sprintf("List '%s' is not sorted alphabetically. Recommended order: %v", name, suggestedFix),
+				listRange,
+				func(f tflint.Fixer) error {
+					err := f.ReplaceText(listRange, suggestedFix)
+					if err != nil {
+						return err
+					}
+					return nil
+				},
+			)
+
 		}
 	}
 
@@ -130,6 +142,6 @@ func toHCLList(items []string) string {
 	for i, item := range items {
 		quotedItems[i] = fmt.Sprintf("\"%s\"", item)
 	}
-	return fmt.Sprintf("[%s]", strings.Join(quotedItems, ", "))
+	return fmt.Sprintf("[\n%s\n]", strings.Join(quotedItems, ",\n"))
 
 }
