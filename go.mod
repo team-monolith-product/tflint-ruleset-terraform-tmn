@@ -1,4 +1,4 @@
-module github.com/kenske/tflint-ruleset-terraform-sort
+module github.com/team-monolith-product/tflint-ruleset-terraform-tmn
 
 go 1.24.0
 

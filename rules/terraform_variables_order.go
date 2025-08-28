@@ -2,7 +2,7 @@ package rules
 
 import (
 	"fmt"
-	"github.com/kenske/tflint-ruleset-terraform-sort/project"
+	"github.com/team-monolith-product/tflint-ruleset-terraform-tmn/project"
 	"reflect"
 	"sort"
 	"strings"

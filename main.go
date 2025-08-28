@@ -1,8 +1,8 @@
 package main
 
 import (
-	"github.com/kenske/tflint-ruleset-terraform-sort/project"
-	"github.com/kenske/tflint-ruleset-terraform-sort/rules"
+	"github.com/team-monolith-product/tflint-ruleset-terraform-tmn/project"
+	"github.com/team-monolith-product/tflint-ruleset-terraform-tmn/rules"
 	"github.com/terraform-linters/tflint-plugin-sdk/plugin"
 	"github.com/terraform-linters/tflint-plugin-sdk/tflint"
 )
@@ -10,7 +10,7 @@ import (
 func main() {
 	plugin.Serve(&plugin.ServeOpts{
 		RuleSet: &tflint.BuiltinRuleSet{
-			Name:    "terraform-sort",
+			Name:    "terraform-tmn",
 			Version: project.Version,
 			Rules: []tflint.Rule{
 				rules.NewTerraformListOrderRule(),
