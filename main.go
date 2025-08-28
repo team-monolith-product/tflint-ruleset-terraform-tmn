@@ -15,6 +15,7 @@ func main() {
 			Rules: []tflint.Rule{
 				rules.NewTerraformListOrderRule(),
 				rules.NewTerraformVariablesOrderRule(),
+				rules.NewTerraformResourceOrderRule(),
 			},
 		},
 	})
