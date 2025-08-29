@@ -1,3 +1,4 @@
 # don't track built binary
 /tflint-ruleset-terraform-sort
 .idea
+.claude

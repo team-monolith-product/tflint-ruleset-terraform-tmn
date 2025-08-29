@@ -8,4 +8,4 @@ build:
 
 install: build
 	mkdir -p ~/.tflint.d/plugins
-	mv ./tflint-ruleset-terraform-sort ~/.tflint.d/plugins
+	mv ./tflint-ruleset-terraform-tmn ~/.tflint.d/plugins
