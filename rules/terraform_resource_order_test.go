@@ -216,3 +216,142 @@ resource "aws_s3_bucket" "storage" {
 		})
 	}
 }
+
+func Test_TerraformResourceOrderRule_AutoFix(t *testing.T) {
+	cases := []struct {
+		Name     string
+		Content  string
+		Config   string
+		Expected map[string]string
+	}{
+		{
+			Name: "Fix resources not in alphabetical order",
+			Content: `resource "aws_instance" "database" {
+  ami           = "ami-87654321"
+  instance_type = "t3.medium"
+}
+
+resource "aws_instance" "app" {
+  ami           = "ami-12345678"
+  instance_type = "t2.micro"
+}`,
+			Config: `
+rule "terraform_resource_order" {
+  enabled = true
+  group_by_type = false
+}`,
+			Expected: map[string]string{
+				"main.tf": `resource "aws_instance" "app" {
+  ami           = "ami-12345678"
+  instance_type = "t2.micro"
+}
+
+resource "aws_instance" "database" {
+  ami           = "ami-87654321"
+  instance_type = "t3.medium"
+}`,
+			},
+		},
+		{
+			Name: "Fix mixed resources not in order",
+			Content: `resource "aws_s3_bucket" "storage" {
+  bucket = "my-storage-bucket"
+}
+
+resource "aws_instance" "app" {
+  ami           = "ami-12345678"
+  instance_type = "t2.micro"
+}`,
+			Config: `
+rule "terraform_resource_order" {
+  enabled = true
+  group_by_type = false
+}`,
+			Expected: map[string]string{
+				"main.tf": `resource "aws_instance" "app" {
+  ami           = "ami-12345678"
+  instance_type = "t2.micro"
+}
+
+resource "aws_s3_bucket" "storage" {
+  bucket = "my-storage-bucket"
+}`,
+			},
+		},
+		{
+			Name: "Fix resources grouped by type - incorrect order",
+			Content: `resource "aws_s3_bucket" "storage" {
+  bucket = "my-storage-bucket"
+}
+
+resource "aws_instance" "database" {
+  ami           = "ami-87654321"
+  instance_type = "t3.medium"
+}
+
+resource "aws_s3_bucket" "backup" {
+  bucket = "my-backup-bucket"
+}
+
+resource "aws_instance" "app" {
+  ami           = "ami-12345678"
+  instance_type = "t2.micro"
+}`,
+			Config: `
+rule "terraform_resource_order" {
+  enabled = true
+  group_by_type = true
+}`,
+			Expected: map[string]string{
+				"main.tf": `resource "aws_instance" "app" {
+  ami           = "ami-12345678"
+  instance_type = "t2.micro"
+}
+
+resource "aws_instance" "database" {
+  ami           = "ami-87654321"
+  instance_type = "t3.medium"
+}
+
+resource "aws_s3_bucket" "backup" {
+  bucket = "my-backup-bucket"
+}
+
+resource "aws_s3_bucket" "storage" {
+  bucket = "my-storage-bucket"
+}`,
+			},
+		},
+		{
+			Name: "No fix when resources are already in order",
+			Content: `resource "aws_instance" "app" {
+  ami           = "ami-12345678"
+  instance_type = "t2.micro"
+}
+
+resource "aws_instance" "database" {
+  ami           = "ami-87654321"
+  instance_type = "t3.medium"
+}`,
+			Config: `
+rule "terraform_resource_order" {
+  enabled = true
+  group_by_type = false
+}`,
+			Expected: map[string]string{},
+		},
+	}
+
+	rule := NewTerraformResourceOrderRule()
+
+	for _, tc := range cases {
+		t.Run(tc.Name, func(t *testing.T) {
+			filename := "main.tf"
+			runner := helper.TestRunner(t, map[string]string{filename: tc.Content, ".tflint.hcl": tc.Config})
+			if err := rule.Check(runner); err != nil {
+				t.Fatalf("Unexpected error occurred: %s", err)
+			}
+			helper.AssertChanges(t, tc.Expected, runner.Changes())
+		})
+	}
+}

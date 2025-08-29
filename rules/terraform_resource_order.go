@@ -94,10 +94,13 @@ func (r *TerraformResourceOrderRule) checkResourceOrder(runner tflint.Runner, gr
 	sortedResourceHclTxts := r.sortedResourceCodeTxts(resources, file, sortedResourceKeys)
 	sortedResourceHclBytes := hclwrite.Format([]byte(strings.Join(sortedResourceHclTxts, "\n\n")))
 
-	return runner.EmitIssue(
+	return runner.EmitIssueWithFix(
 		r,
 		fmt.Sprintf("Recommended resource order:\n%s", sortedResourceHclBytes),
 		*firstRange,
+		func(f tflint.Fixer) error {
+			return r.applyFix(f, resources, sortedResourceKeys, file)
+		},
 	)
 }
 
@@ -183,4 +186,42 @@ func (r *TerraformResourceOrderRule) resourceCodeTxts(resources []*hclsyntax.Blo
 		resourceHclTxts[key] = string(resource.Range().SliceBytes(file.Bytes))
 	}
 	return resourceHclTxts
+}
+
+func (r *TerraformResourceOrderRule) applyFix(f tflint.Fixer, resources []*hclsyntax.Block, sortedResourceKeys []string, file *hcl.File) error {
+	if len(resources) == 0 {
+		return nil
+	}
+
+	// Create a map of resource keys to blocks for easy lookup
+	resourceMap := make(map[string]*hclsyntax.Block)
+	for _, resource := range resources {
+		key := r.getResourceKey(resource)
+		resourceMap[key] = resource
+	}
+
+	// Get the text content for each resource
+	resourceTexts := r.resourceCodeTxts(resources, file)
+
+	// Build the sorted text
+	var sortedTexts []string
+	for _, key := range sortedResourceKeys {
+		if text, exists := resourceTexts[key]; exists {
+			sortedTexts = append(sortedTexts, text)
+		}
+	}
+
+	// Calculate the range from the first to the last resource
+	firstResource := resources[0]
+	lastResource := resources[len(resources)-1]
+	
+	replaceRange := hcl.Range{
+		Filename: firstResource.Range().Filename,
+		Start:    firstResource.Range().Start,
+		End:      lastResource.Range().End,
+	}
+
+	// Replace all resources with the sorted version
+	sortedContent := strings.Join(sortedTexts, "\n\n")
+	return f.ReplaceText(replaceRange, sortedContent)
 }
